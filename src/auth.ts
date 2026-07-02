@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
@@ -24,29 +25,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const adminEmail = process.env.ADMIN_EMAIL;
-        const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+        const user = await prisma.user.findUnique({
+          where: { email: email.toLowerCase() },
+        });
 
-        if (!adminEmail || !adminPasswordHash) {
-          throw new Error(
-            "ADMIN_EMAIL et ADMIN_PASSWORD_HASH doivent être définis dans .env.local"
-          );
-        }
-
-        if (email.toLowerCase() !== adminEmail.toLowerCase()) {
+        if (!user) {
           return null;
         }
 
         const isValidPassword = await bcrypt.compare(
           password,
-          adminPasswordHash
+          user.passwordHash
         );
 
         if (!isValidPassword) {
           return null;
         }
 
-        return { id: "admin", email: adminEmail };
+        return { id: user.id, email: user.email };
       },
     }),
   ],
