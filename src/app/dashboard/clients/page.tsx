@@ -4,13 +4,31 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteClient } from "@/app/actions/clients";
 
-export default async function ClientsPage() {
+export default async function ClientsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const session = await auth();
   if (!session) {
     redirect("/login");
   }
 
+  const { q } = await searchParams;
+  const query = q?.trim() ?? "";
+
   const clients = await prisma.client.findMany({
+    where: query
+      ? {
+          OR: [
+            { name: { contains: query } },
+            { company: { contains: query } },
+            { email: { contains: query } },
+            { phone: { contains: query } },
+            { city: { contains: query } },
+          ],
+        }
+      : undefined,
     orderBy: { name: "asc" },
   });
 
@@ -28,9 +46,35 @@ export default async function ClientsPage() {
         </Link>
       </div>
 
+      <form method="GET" className="flex max-w-sm gap-2">
+        <input
+          type="search"
+          name="q"
+          placeholder="Rechercher un client..."
+          defaultValue={query}
+          className="w-full rounded-md border border-black/[.08] dark:border-white/[.145] bg-transparent px-3 py-2 text-sm outline-none focus:border-black/40 dark:focus:border-white/40"
+        />
+        <button
+          type="submit"
+          className="flex h-10 shrink-0 items-center justify-center rounded-full border border-solid border-black/[.08] px-4 text-sm font-medium transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
+        >
+          Rechercher
+        </button>
+        {query && (
+          <Link
+            href="/dashboard/clients"
+            className="flex h-10 shrink-0 items-center justify-center px-2 text-sm font-medium underline-offset-2 hover:underline"
+          >
+            Réinitialiser
+          </Link>
+        )}
+      </form>
+
       {clients.length === 0 ? (
         <p className="text-zinc-600 dark:text-zinc-400">
-          Aucun client pour le moment.
+          {query
+            ? `Aucun client ne correspond à "${query}".`
+            : "Aucun client pour le moment."}
         </p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-black/[.08] dark:border-white/[.145]">
