@@ -13,23 +13,38 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String      @id @default(cuid())
+  name         String?
+  email        String      @unique
   passwordHash String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime    @default(now())
+  timeEntries  TimeEntry[]
 }
 
 model Client {
-  id         String   @id @default(cuid())
-  name       String
-  company    String?
-  email      String?
-  phone      String?
-  address    String?
-  postalCode String?
-  city       String?
-  siret      String?
-  notes      String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String      @id @default(cuid())
+  name        String
+  company     String?
+  email       String?
+  phone       String?
+  address     String?
+  postalCode  String?
+  city        String?
+  siret       String?
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  timeEntries TimeEntry[]
+}
+
+model TimeEntry {
+  id          String   @id @default(cuid())
+  date        DateTime
+  hours       Float
+  description String?
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId    String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  createdAt   DateTime @default(now())
 }

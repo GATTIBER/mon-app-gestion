@@ -103,6 +103,12 @@ export default async function ClientsPage({
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-3">
                       <Link
+                        href={`/dashboard/time-entries?clientId=${client.id}`}
+                        className="text-sm font-medium underline-offset-2 hover:underline"
+                      >
+                        Temps
+                      </Link>
+                      <Link
                         href={`/dashboard/clients/${client.id}/edit`}
                         className="text-sm font-medium underline-offset-2 hover:underline"
                       >

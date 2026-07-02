@@ -18,12 +18,26 @@ export default async function DashboardPage() {
       <p className="text-zinc-600 dark:text-zinc-400">
         Connecté en tant que {session.user?.email}
       </p>
-      <Link
-        href="/dashboard/clients"
-        className="flex h-11 items-center justify-center rounded-full bg-foreground px-5 text-sm font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
-      >
-        Voir les clients
-      </Link>
+      <div className="flex flex-wrap items-center justify-center gap-4">
+        <Link
+          href="/dashboard/clients"
+          className="flex h-11 items-center justify-center rounded-full bg-foreground px-5 text-sm font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
+        >
+          Voir les clients
+        </Link>
+        <Link
+          href="/dashboard/time-entries"
+          className="flex h-11 items-center justify-center rounded-full border border-solid border-black/[.08] px-5 text-sm font-medium transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
+        >
+          Suivi des temps
+        </Link>
+        <Link
+          href="/dashboard/team"
+          className="flex h-11 items-center justify-center rounded-full border border-solid border-black/[.08] px-5 text-sm font-medium transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
+        >
+          Équipe
+        </Link>
+      </div>
       <form action={logout}>
         <button
           type="submit"

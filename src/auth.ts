@@ -11,6 +11,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "jwt",
   },
+  callbacks: {
+    jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+      }
+      return session;
+    },
+  },
   providers: [
     Credentials({
       credentials: {
@@ -42,7 +56,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        return { id: user.id, email: user.email };
+        return { id: user.id, email: user.email, name: user.name };
       },
     }),
   ],
