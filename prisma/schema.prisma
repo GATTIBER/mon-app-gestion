@@ -18,3 +18,18 @@ model User {
   passwordHash String
   createdAt    DateTime @default(now())
 }
+
+model Client {
+  id         String   @id @default(cuid())
+  name       String
+  company    String?
+  email      String?
+  phone      String?
+  address    String?
+  postalCode String?
+  city       String?
+  siret      String?
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

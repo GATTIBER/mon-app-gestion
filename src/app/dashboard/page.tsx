@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { logout } from "@/app/actions/auth";
@@ -17,6 +18,12 @@ export default async function DashboardPage() {
       <p className="text-zinc-600 dark:text-zinc-400">
         Connecté en tant que {session.user?.email}
       </p>
+      <Link
+        href="/dashboard/clients"
+        className="flex h-11 items-center justify-center rounded-full bg-foreground px-5 text-sm font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
+      >
+        Voir les clients
+      </Link>
       <form action={logout}>
         <button
           type="submit"
