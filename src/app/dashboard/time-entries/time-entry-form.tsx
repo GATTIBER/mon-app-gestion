@@ -1,9 +1,16 @@
 "use client";
 
 import { useActionState } from "react";
-import { createTimeEntry } from "@/app/actions/time-entries";
+import type { TimeEntryFormState } from "@/app/actions/time-entries";
 
 type Client = { id: string; name: string };
+
+type TimeEntryFormValues = {
+  clientId: string;
+  date: string;
+  hours: string;
+  description: string;
+};
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -11,15 +18,19 @@ function today() {
 
 export function TimeEntryForm({
   clients,
-  defaultClientId,
+  action,
+  defaultValues,
+  submitLabel = "Ajouter le temps",
 }: {
   clients: Client[];
-  defaultClientId?: string;
+  action: (
+    prevState: TimeEntryFormState,
+    formData: FormData
+  ) => Promise<TimeEntryFormState>;
+  defaultValues?: Partial<TimeEntryFormValues>;
+  submitLabel?: string;
 }) {
-  const [state, formAction, pending] = useActionState(
-    createTimeEntry,
-    undefined
-  );
+  const [state, formAction, pending] = useActionState(action, undefined);
 
   if (clients.length === 0) {
     return (
@@ -39,7 +50,7 @@ export function TimeEntryForm({
           id="clientId"
           name="clientId"
           required
-          defaultValue={defaultClientId ?? ""}
+          defaultValue={defaultValues?.clientId ?? ""}
           className="rounded-md border border-black/[.08] dark:border-white/[.145] bg-transparent px-3 py-2 text-sm outline-none focus:border-black/40 dark:focus:border-white/40"
         >
           <option value="" disabled>
@@ -62,7 +73,7 @@ export function TimeEntryForm({
           name="date"
           type="date"
           required
-          defaultValue={today()}
+          defaultValue={defaultValues?.date ?? today()}
           className="rounded-md border border-black/[.08] dark:border-white/[.145] bg-transparent px-3 py-2 text-sm outline-none focus:border-black/40 dark:focus:border-white/40"
         />
       </div>
@@ -78,6 +89,7 @@ export function TimeEntryForm({
           step="0.25"
           min="0.25"
           required
+          defaultValue={defaultValues?.hours}
           className="rounded-md border border-black/[.08] dark:border-white/[.145] bg-transparent px-3 py-2 text-sm outline-none focus:border-black/40 dark:focus:border-white/40"
         />
       </div>
@@ -90,6 +102,7 @@ export function TimeEntryForm({
           id="description"
           name="description"
           rows={3}
+          defaultValue={defaultValues?.description ?? ""}
           className="rounded-md border border-black/[.08] dark:border-white/[.145] bg-transparent px-3 py-2 text-sm outline-none focus:border-black/40 dark:focus:border-white/40"
         />
       </div>
@@ -105,7 +118,7 @@ export function TimeEntryForm({
         disabled={pending}
         className="mt-2 flex h-11 w-full items-center justify-center rounded-full bg-foreground px-5 text-sm font-medium text-background transition-colors hover:bg-[#383838] disabled:opacity-50 dark:hover:bg-[#ccc]"
       >
-        {pending ? "Enregistrement..." : "Ajouter le temps"}
+        {pending ? "Enregistrement..." : submitLabel}
       </button>
     </form>
   );

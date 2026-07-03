@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { deleteTimeEntry } from "@/app/actions/time-entries";
+import { createTimeEntry, deleteTimeEntry } from "@/app/actions/time-entries";
 import { TimeEntryForm } from "./time-entry-form";
 
 export default async function TimeEntriesPage({
@@ -81,15 +81,23 @@ export default async function TimeEntriesPage({
                     <td className="px-4 py-3">{entry.hours}</td>
                     <td className="px-4 py-3">{entry.description ?? "—"}</td>
                     <td className="px-4 py-3 text-right">
-                      <form action={deleteTimeEntry}>
-                        <input type="hidden" name="id" value={entry.id} />
-                        <button
-                          type="submit"
-                          className="text-sm font-medium text-red-600 underline-offset-2 hover:underline dark:text-red-400"
+                      <div className="flex justify-end gap-4">
+                        <Link
+                          href={`/dashboard/time-entries/${entry.id}/edit`}
+                          className="text-sm font-medium underline-offset-2 hover:underline"
                         >
-                          Supprimer
-                        </button>
-                      </form>
+                          Modifier
+                        </Link>
+                        <form action={deleteTimeEntry}>
+                          <input type="hidden" name="id" value={entry.id} />
+                          <button
+                            type="submit"
+                            className="text-sm font-medium text-red-600 underline-offset-2 hover:underline dark:text-red-400"
+                          >
+                            Supprimer
+                          </button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -112,7 +120,11 @@ export default async function TimeEntriesPage({
         <h2 className="text-lg font-semibold text-black dark:text-zinc-50">
           Saisir un temps
         </h2>
-        <TimeEntryForm clients={clients} defaultClientId={clientId} />
+        <TimeEntryForm
+          clients={clients}
+          action={createTimeEntry}
+          defaultValues={clientId ? { clientId } : undefined}
+        />
       </div>
 
       <Link

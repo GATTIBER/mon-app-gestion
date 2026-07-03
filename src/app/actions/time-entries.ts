@@ -7,15 +7,16 @@ import { prisma } from "@/lib/prisma";
 
 export type TimeEntryFormState = { error: string } | undefined;
 
-export async function createTimeEntry(
-  _prevState: TimeEntryFormState,
-  formData: FormData
-): Promise<TimeEntryFormState> {
-  const session = await auth();
-  if (!session) {
-    redirect("/login");
-  }
+type TimeEntryData = {
+  clientId: string;
+  date: Date;
+  hours: number;
+  description: string | null;
+};
 
+function readTimeEntryFormData(
+  formData: FormData
+): { error: string } | { data: TimeEntryData } {
   const clientId = formData.get("clientId");
   const date = formData.get("date");
   const hoursRaw = formData.get("hours");
@@ -33,10 +34,9 @@ export async function createTimeEntry(
     return { error: "Le nombre d'heures doit être un nombre positif." };
   }
 
-  await prisma.timeEntry.create({
+  return {
     data: {
       clientId,
-      userId: session.user.id,
       date: new Date(date),
       hours,
       description:
@@ -44,7 +44,47 @@ export async function createTimeEntry(
           ? description.trim()
           : null,
     },
+  };
+}
+
+export async function createTimeEntry(
+  _prevState: TimeEntryFormState,
+  formData: FormData
+): Promise<TimeEntryFormState> {
+  const session = await auth();
+  if (!session) {
+    redirect("/login");
+  }
+
+  const result = readTimeEntryFormData(formData);
+  if ("error" in result) {
+    return { error: result.error };
+  }
+
+  await prisma.timeEntry.create({
+    data: { ...result.data, userId: session.user.id },
   });
+
+  revalidatePath("/dashboard/time-entries");
+  redirect("/dashboard/time-entries");
+}
+
+export async function updateTimeEntry(
+  id: string,
+  _prevState: TimeEntryFormState,
+  formData: FormData
+): Promise<TimeEntryFormState> {
+  const session = await auth();
+  if (!session) {
+    redirect("/login");
+  }
+
+  const result = readTimeEntryFormData(formData);
+  if ("error" in result) {
+    return { error: result.error };
+  }
+
+  await prisma.timeEntry.update({ where: { id }, data: result.data });
 
   revalidatePath("/dashboard/time-entries");
   redirect("/dashboard/time-entries");
