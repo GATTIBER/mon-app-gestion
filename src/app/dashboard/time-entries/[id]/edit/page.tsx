@@ -23,6 +23,9 @@ export default async function EditTimeEntryPage({
   if (!entry) {
     notFound();
   }
+  if (session.user.role !== "ADMIN" && entry.userId !== session.user.id) {
+    notFound();
+  }
 
   const updateTimeEntryWithId = updateTimeEntry.bind(null, id);
 

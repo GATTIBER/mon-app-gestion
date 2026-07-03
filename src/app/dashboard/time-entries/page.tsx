@@ -16,10 +16,14 @@ export default async function TimeEntriesPage({
   }
 
   const { clientId } = await searchParams;
+  const isAdmin = session.user.role === "ADMIN";
 
   const [entries, clients] = await Promise.all([
     prisma.timeEntry.findMany({
-      where: clientId ? { clientId } : undefined,
+      where: {
+        ...(clientId ? { clientId } : {}),
+        ...(isAdmin ? {} : { userId: session.user.id }),
+      },
       include: { client: true, user: true },
       orderBy: { date: "desc" },
     }),
@@ -59,7 +63,9 @@ export default async function TimeEntriesPage({
                 <tr>
                   <th className="px-4 py-3 font-medium">Date</th>
                   <th className="px-4 py-3 font-medium">Client</th>
-                  <th className="px-4 py-3 font-medium">Membre</th>
+                  {isAdmin && (
+                    <th className="px-4 py-3 font-medium">Membre</th>
+                  )}
                   <th className="px-4 py-3 font-medium">Heures</th>
                   <th className="px-4 py-3 font-medium">Description</th>
                   <th className="px-4 py-3 font-medium" />
@@ -75,9 +81,11 @@ export default async function TimeEntriesPage({
                       {entry.date.toLocaleDateString("fr-FR")}
                     </td>
                     <td className="px-4 py-3">{entry.client.name}</td>
-                    <td className="px-4 py-3">
-                      {entry.user.name ?? entry.user.email}
-                    </td>
+                    {isAdmin && (
+                      <td className="px-4 py-3">
+                        {entry.user.name ?? entry.user.email}
+                      </td>
+                    )}
                     <td className="px-4 py-3">{entry.hours}</td>
                     <td className="px-4 py-3">{entry.description ?? "—"}</td>
                     <td className="px-4 py-3 text-right">
@@ -104,7 +112,7 @@ export default async function TimeEntriesPage({
               </tbody>
               <tfoot>
                 <tr className="border-t border-black/[.08] dark:border-white/[.145] font-medium">
-                  <td className="px-4 py-3" colSpan={3}>
+                  <td className="px-4 py-3" colSpan={isAdmin ? 3 : 2}>
                     Total
                   </td>
                   <td className="px-4 py-3">{totalHours}</td>

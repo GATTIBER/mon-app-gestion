@@ -84,7 +84,16 @@ export async function updateTimeEntry(
     return { error: result.error };
   }
 
-  await prisma.timeEntry.update({ where: { id }, data: result.data });
+  const { count } = await prisma.timeEntry.updateMany({
+    where: {
+      id,
+      ...(session.user.role === "ADMIN" ? {} : { userId: session.user.id }),
+    },
+    data: result.data,
+  });
+  if (count === 0) {
+    return { error: "Ce temps n'existe pas ou ne t'appartient pas." };
+  }
 
   revalidatePath("/dashboard/time-entries");
   redirect("/dashboard/time-entries");
@@ -101,7 +110,12 @@ export async function deleteTimeEntry(formData: FormData) {
     return;
   }
 
-  await prisma.timeEntry.delete({ where: { id } });
+  await prisma.timeEntry.deleteMany({
+    where: {
+      id,
+      ...(session.user.role === "ADMIN" ? {} : { userId: session.user.id }),
+    },
+  });
 
   revalidatePath("/dashboard/time-entries");
 }

@@ -12,11 +12,17 @@ datasource db {
   provider = "sqlite"
 }
 
+enum Role {
+  ADMIN
+  MEMBER
+}
+
 model User {
   id           String      @id @default(cuid())
   name         String?
   email        String      @unique
   passwordHash String
+  role         Role        @default(MEMBER)
   createdAt    DateTime    @default(now())
   timeEntries  TimeEntry[]
 }
